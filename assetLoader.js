@@ -1,4 +1,32 @@
-function loadAssets() {
+export function loadAssets() {
+  loadSpriteAtlas("./assets/fatslim.png", {
+    "fatslim-down": { x: 0, y: 0, width: 64, height: 64 },
+    "fatslim-up": { x: 32, y: 0, width: 64, height: 64 }, // Corrected X coordinate assuming sprites are side-by-side
+    "fatslim-side": {
+      x: 0,
+      y: 64, // Assuming side sprites start on the next row
+      width: 64, // Assuming two side frames
+      height: 64,
+      sliceX: 2,
+      sliceY: 1,
+      anims: { walk: { from: 0, to: 1, speed: 6 } },
+    },
+    fatslim: { x: 0, y: 0, width: 64, height: 64 },
+  });
+  loadSpriteAtlas("./assets/shawn.png", {
+    "shawn-down": { x: 0, y: 0, width: 64, height: 64 },
+    "shawn-up": { x: 32, y: 0, width: 64, height: 64 }, // Corrected X coordinate assuming sprites are side-by-side
+    "shawn-side": {
+      x: 0,
+      y: 64, // Assuming side sprites start on the next row
+      width: 64, // Assuming two side frames
+      height: 64,
+      sliceX: 2,
+      sliceY: 1,
+      anims: { walk: { from: 0, to: 1, speed: 6 } },
+    },
+    shawn: { x: 0, y: 0, width: 64, height: 64 },
+  });
   loadSpriteAtlas("./assets/characters.png", {
     "player-down": { x: 0, y: 82, width: 16, height: 16 },
     "player-up": { x: 16, y: 82, width: 16, height: 16 },
