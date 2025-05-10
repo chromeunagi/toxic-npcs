@@ -1,7 +1,3 @@
-# Pokemon-like-Game-Made-in-Kaboom.js
+# Converse with LLM-based NPCs
 
-Final source code for making a Pokemon-like game using the Kaboom.js library.
-
-Watch the tutorial if you want to learn how to build this : https://youtu.be/zo3crHnFGho
-
-Demo link : https://jslegend.itch.io/pokemon-like-tutorial-kaboomjs
+Demo game to set up basic framework.
