@@ -16,6 +16,7 @@ const systemPrompt = `You are helping me build dialogue for a top-down videogame
 export class ConversationManager {
     constructor(player) {
         this.player = player;
+        this.currentNpc = null;
         this.npcName = null;
         this.dialogueQueue = [];
         this.totalChunks = 0;
@@ -51,7 +52,7 @@ export class ConversationManager {
     }
 
     buildPrompt() {
-        const p = `For this exchange, you are playing the role of ${this.npcName}, Here is the backstory for this NPC: ${this.npcContext}.`;
+        const p = `For this exchange, you are playing the role of ${this.npcName}, Here is the backstory for this NPC: ${this.backstory}.`;
         var prompt = `${systemPrompt}\n\n${p}`;
         if (this.conversationHistory.length > 0) {
             var history = "";
@@ -63,10 +64,14 @@ export class ConversationManager {
             prompt += `\n\nHere is the conversation history:\n${history}`;
         }
         prompt += `\n\n${responseJsonFormat}`;
+
+        console.log("buildPrompt - Prompt for Gemini:", prompt);
         return prompt;
     }
 
     processLlmResponse(responseStr) {
+        console.log("processLlmResponse - Response from Gemini:", responseStr);
+
         const response = JSON.parse(responseStr.replace("```json", "").replace("```", ""));
         const llmDialogue = response.text;
         this.conversationHistory.push({ speaker: this.npcName, text: llmDialogue });
@@ -91,14 +96,18 @@ export class ConversationManager {
         this.displayNextChunk();
     }
 
-    async startConversation(npcName, npcContext) {
+    async startConversation(npc) {
         if (this.player.isInDialogue) {
+            console.log("Cannot start conversation: Player busy.");
             return;
         }
-
+        console.log(`Starting conversation with ${npc.npcName}`);
         this.player.isInDialogue = true;
-        this.npcName = npcName;
-        this.npcContext = npcContext;
+
+        this.currentNpc = npc;
+        this.npcName = npc.npcName;
+        this.backstory = npc.backstory;
+        this.conversationHistory = [];
 
         // Build prompt and get LLM response
         const prompt = this.buildPrompt();
@@ -106,7 +115,7 @@ export class ConversationManager {
         this.processLlmResponse(responseStr);
 
         this.spaceListener = onKeyPress("space", () => this.handleSpacePress());
-        this.escapeListener  = onKeyPress("escape", () => this.handleEscapePress());
+        this.escapeListener = onKeyPress("escape", () => this.handleEscapePress());
         this.upListener = onKeyPress("w", () => this.handleUpPress());
         this.downListener = onKeyPress("s", () => this.handleDownPress());
     }
@@ -155,8 +164,6 @@ export class ConversationManager {
     }
 
     handleSpacePress() {
-        console.log(`handleSpacePress - responseSelectionMode=${this.responseSelectionMode}, endConversationAfterCurrentDialogue=${this.endConversationAfterCurrentDialogue}, endConversationAfterCurrentDialogueType=${typeof this.endConversationAfterCurrentDialogue}`);
-
         if (this.responseSelectionMode) {
             this.handlePlayerResponse();
         }
@@ -192,8 +199,9 @@ export class ConversationManager {
     }
 
     endConversation() {
-        console.log("endConversation - Ending conversation");
         destroy(this.dialogueBox);
+        this.currentNpc = null;
+        this.backtory = null;
         this.player.isInDialogue = false;
         this.responseSelectionMode = false;
         this.spaceListener.cancel();

@@ -1,60 +1,12 @@
+const PEOPLE = ["bob", "kevin", "bernice"]
+
 export function loadAssets() {
-  loadSpriteAtlas("./assets/fatslim.png", {
-    "fatslim-down": { x: 0, y: 0, width: 64, height: 64 },
-    "fatslim-up": { x: 32, y: 0, width: 64, height: 64 }, // Corrected X coordinate assuming sprites are side-by-side
-    "fatslim-side": {
-      x: 0,
-      y: 64, // Assuming side sprites start on the next row
-      width: 64, // Assuming two side frames
-      height: 64,
-      sliceX: 2,
-      sliceY: 1,
-      anims: { walk: { from: 0, to: 1, speed: 6 } },
-    },
-    fatslim: { x: 0, y: 0, width: 64, height: 64 },
-  });
-  loadSpriteAtlas("./assets/shawn.png", {
-    "shawn-down": { x: 0, y: 0, width: 64, height: 64 },
-    "shawn-up": { x: 32, y: 0, width: 64, height: 64 }, // Corrected X coordinate assuming sprites are side-by-side
-    "shawn-side": {
-      x: 0,
-      y: 64, // Assuming side sprites start on the next row
-      width: 64, // Assuming two side frames
-      height: 64,
-      sliceX: 2,
-      sliceY: 1,
-      anims: { walk: { from: 0, to: 1, speed: 6 } },
-    },
-    shawn: { x: 0, y: 0, width: 64, height: 64 },
-  });
-  loadSpriteAtlas("./assets/characters.png", {
-    "player-down": { x: 0, y: 82, width: 16, height: 16 },
-    "player-up": { x: 16, y: 82, width: 16, height: 16 },
-    "player-side": {
-      x: 0,
-      y: 98,
-      width: 32,
-      height: 16,
-      sliceX: 2,
-      sliceY: 1,
-      anims: { walk: { from: 0, to: 1, speed: 6 } },
-    },
-    npc: { x: 32, y: 98, width: 16, height: 16 },
-    "cat-mon": { x: 0, y: 16, width: 32, height: 32 },
-    "spider-mon": { x: 32, y: 16, width: 32, height: 32 },
-    "centipede-mon": { x: 64, y: 16, width: 32, height: 32 },
-    "grass-mon": { x: 0, y: 49, width: 32, height: 32 },
-    "mushroom-mon": { x: 32, y: 49, width: 32, height: 32 },
-    "mini-mons": {
-      x: 0,
-      y: 0,
-      width: 128,
-      height: 16,
-      sliceX: 8,
-      sliceY: 1,
-      anims: { spider: 1, centipede: 2, grass: 3 },
-    },
-  });
+
+  for (const person of PEOPLE) {
+    loadIdleSpriteAtlas(`./assets/people/${person}/idle.png`, person, 0, 0);
+    loadRunSpriteAtlas(`./assets/people/${person}/run.png`, person, 0, 0);
+  }
+
   loadSprite("battle-background", "./assets/battleBackground.png");
   loadSpriteAtlas("./assets/tiles.png", {
     tile: {
@@ -86,6 +38,103 @@ export function loadAssets() {
         "ground-m": 42,
         "ground-r": 43,
         "rock-water": 60,
+      },
+    },
+  });
+}
+function loadIdleSpriteAtlas(path, prefix, startX = 0, startY = 0) {
+  loadSpriteAtlas(path, {
+    [`${prefix}-right-idle`]: {
+      x: startX,
+      y: startY,
+      width: 96,
+      height: 32,
+      sliceX: 6,
+      sliceY: 1,
+      anims: {
+        idle: { from: 0, to: 5, loop: true, speed: 3 },
+      },
+    },
+    [`${prefix}-up-idle`]: {
+      x: startX + 96,
+      y: startY,
+      width: 96,
+      height: 32,
+      sliceX: 6,
+      sliceY: 1,
+      anims: {
+        idle: { from: 0, to: 5, loop: true, speed: 3 },
+      },
+    },
+    [`${prefix}-left-idle`]: {
+      x: startX + 192,
+      y: startY,
+      width: 96,
+      height: 32,
+      sliceX: 6,
+      sliceY: 1,
+      anims: {
+        idle: { from: 0, to: 5, loop: true, speed: 3 },
+      },
+    },
+    [`${prefix}-down-idle`]: {
+      x: startX + 288,
+      y: startY,
+      width: 96,
+      height: 32,
+      sliceX: 6,
+      sliceY: 1,
+      anims: {
+        idle: { from: 0, to: 5, loop: true, speed: 3 },
+      },
+    },
+  });
+}
+
+function loadRunSpriteAtlas(path, prefix, startX = 0, startY = 0) {
+  loadSpriteAtlas(path, {
+    [`${prefix}-right-run`]: {
+      x: startX,
+      y: startY,
+      width: 96,
+      height: 32,
+      sliceX: 6,
+      sliceY: 1,
+      anims: {
+        run: { from: 0, to: 5, loop: true, speed: 10 },
+      },
+    },
+    [`${prefix}-up-run`]: {
+      x: startX + 96,
+      y: startY,
+      width: 96,
+      height: 32,
+      sliceX: 6,
+      sliceY: 1,
+      anims: {
+        run: { from: 0, to: 5, loop: true, speed: 10 },
+      },
+    },
+    [`${prefix}-left-run`]: {
+      x: startX + 192,
+      y: startY,
+      width: 96,
+      height: 32,
+      sliceX: 6,
+      sliceY: 1,
+      anims: {
+        run: { from: 0, to: 5, loop: true, speed: 10 },
+      },
+    },
+    [`${prefix}-down-run`]: {
+      x: startX + 288,
+      y: startY,
+      width: 96,
+      height: 32,
+      sliceX: 6,
+      sliceY: 1,
+      anims: {
+        run: { from: 0, to: 5, loop: true, speed: 10 },
       },
     },
   });
