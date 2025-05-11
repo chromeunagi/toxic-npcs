@@ -1,4 +1,5 @@
 import { ConversationManager } from "../utils/conversationManager.js";
+import { UnguidedConversationManager } from "../utils/unguidedConversationManager.js";
 import { initializeMap } from "../utils/map.js";
 
 const commonOfficeKnowledge = `Bernice, Kevin, and Bruce are all employees at Moogflix, a FAANG-like company. They work on scaling some dashboard for telemetry data.
@@ -52,7 +53,8 @@ const npcData = {
 export function setWorld(worldState) {
   initializeMap();
   const player = initializePlayer(worldState);
-  const conversationManager = new ConversationManager(player, commonOfficeKnowledge);
+  //const conversationManager = new ConversationManager(player, commonOfficeKnowledge);
+  const conversationManager = new UnguidedConversationManager(player, commonOfficeKnowledge);
 
   // Initialize all NPCs
   for (const npcName of Object.keys(npcData)) {
