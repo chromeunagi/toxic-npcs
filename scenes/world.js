@@ -79,6 +79,7 @@ function initializePlayer(worldState) {
       currentSprite: "bob-down-idle",
       speed: 300,
       isInDialogue: false,
+      activeMovementKeys: [],
     },
   ]);
   player.play("idle");
@@ -94,82 +95,96 @@ function initializePlayer(worldState) {
     if (player.currentSprite !== spriteName) {
       player.use(sprite(spriteName));
       player.currentSprite = spriteName;
+      return true;
     }
+    return false;
   }
 
-  onKeyDown("s", () => {
-    if (player.isInDialogue) return;
-    player.facing = "down";
-    if (player.curAnim() !== "run") {
-      setSprite(player, "bob-down-run");
-      player.play("run");
+  const movementKeys = ["w", "a", "s", "d"];
+
+  for (const key of movementKeys) {
+    onKeyDown(key, () => {
+      // When a movement key is pressed:
+      // 1. Remove it from its current position in activeMovementKeys (if it's there).
+      // 2. Add it to the end of activeMovementKeys, marking it as the most recent.
+      const index = player.activeMovementKeys.indexOf(key);
+      if (index > -1) {
+        player.activeMovementKeys.splice(index, 1);
+      }
+      player.activeMovementKeys.push(key);
+    });
+
+    onKeyRelease(key, () => {
+      // When a movement key is released, remove it from activeMovementKeys.
+      const index = player.activeMovementKeys.indexOf(key);
+      if (index > -1) {
+        player.activeMovementKeys.splice(index, 1);
+      }
+    });
+  }
+
+  player.onUpdate(() => {
+    if (player.isInDialogue) {
+      const idleSpriteNameWhenInDialogue = `bob-${player.facing}-idle`;
+      const spriteChangedForDialogue = setSprite(player, idleSpriteNameWhenInDialogue);
+
+      if (spriteChangedForDialogue || player.curAnim() !== "idle") {
+        player.play("idle");
+      }
+      // Clear active movement keys when in dialogue.
+      player.activeMovementKeys = []; // Uncomment to clear keys on dialogue start
+      return;
     }
-    player.move(0, player.speed);
-  });
 
-  onKeyDown("w", () => {
-    if (player.isInDialogue) return;
-    player.facing = "up";
-    if (player.curAnim() !== "run") {
-      setSprite(player, "bob-up-run");
+    if (player.activeMovementKeys.length > 0) {
+      // Get the most recently pressed key that is still held down
+      const currentKey = player.activeMovementKeys[player.activeMovementKeys.length - 1];
+
+      let moveX = 0;
+      let moveY = 0;
+      let targetFacing = player.facing; // Default to current facing
+
+      switch (currentKey) {
+        case "w":
+          moveY = -player.speed;
+          targetFacing = "up";
+          break;
+        case "s":
+          moveY = player.speed;
+          targetFacing = "down";
+          break;
+        case "a":
+          moveX = -player.speed;
+          targetFacing = "left";
+          break;
+        case "d":
+          moveX = player.speed;
+          targetFacing = "right";
+          break;
+      }
+
+      player.facing = targetFacing;
+      const runSpriteName = `bob-${player.facing}-run`;
+      const spriteWasChanged = setSprite(player, runSpriteName);
+
+      if (spriteWasChanged || player.curAnim() !== "run") {
       player.play("run");
+      }
+
+      //setSprite(player, runSpriteName);
+      player.move(moveX, moveY);
+    } else {
+      // No movement keys are active, and not in dialogue. Ensure player is idle.
+      if (player.curAnim() !== "idle") {
+        const idleSpriteName = `bob-${player.facing}-idle`;
+        setSprite(player, idleSpriteName);
+        player.play("idle");
+      }
     }
-    player.move(0, -player.speed);
-
   });
 
-  onKeyDown("a", () => {
-    if (player.isInDialogue) return;
-    player.facing = "left";
-    if (player.curAnim() !== "run") {
-      setSprite(player, "bob-left-run");
-      player.play("run");
-    }
-    player.move(-player.speed, 0);
-  });
-
-  onKeyDown("d", () => {
-    if (player.isInDialogue) return;
-    player.facing = "right";
-    if (player.curAnim() !== "run") {
-      setSprite(player, "bob-right-run");
-      player.play("run");
-    }
-    player.move(player.speed, 0);
-  });
-
-  onKeyRelease("s", () => {
-    if (player.isInDialogue) return;
-    player.stop();
-    setSprite(player, "bob-down-idle");
-    player.play("idle");
-  });
-
-  onKeyRelease("w", () => {
-    if (player.isInDialogue) return;
-    player.stop();
-    setSprite(player, "bob-up-idle");
-    player.play("idle");
-  });
-
-  onKeyRelease("a", () => {
-    if (player.isInDialogue) return;
-    player.stop();
-    setSprite(player, "bob-left-idle");
-    player.play("idle");
-  });
-
-  onKeyRelease("d", () => {
-    if (player.isInDialogue) return;
-    player.stop();
-    setSprite(player, "bob-right-idle");
-    player.play("idle");
-  });
-
-  let tick = 0;
   onUpdate(() => {
     camPos(player.pos);
-    tick++;
   });
 
   return player;
