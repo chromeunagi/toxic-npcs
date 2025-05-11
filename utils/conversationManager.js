@@ -17,16 +17,17 @@ export class ConversationManager {
     constructor(player) {
         this.player = player;
         this.currentNpc = null;
-        this.npcName = null;
+
         this.dialogueQueue = [];
+        this.conversationHistory = [];
+
         this.totalChunks = 0;
         this.currentChunk = 0;
+
         this.dialogueBox = null;
         this.content = null;
         this.endConversationAfterCurrentDialogue = false;
         this.responseOptions = null;
-
-        this.conversationHistory = [];
 
         this.responseSelectionMode = false;
         this.selectedOption = 0;
@@ -52,7 +53,7 @@ export class ConversationManager {
     }
 
     buildPrompt() {
-        const p = `For this exchange, you are playing the role of ${this.npcName}, Here is the backstory for this NPC: ${this.backstory}.`;
+        const p = `For this exchange, you are playing the role of ${this.currentNpc.npcName}, Here is the backstory for this NPC: ${this.backstory}.`;
         var prompt = `${systemPrompt}\n\n${p}`;
         if (this.conversationHistory.length > 0) {
             var history = "";
@@ -97,10 +98,15 @@ export class ConversationManager {
     }
 
     async startConversation(npc) {
-        if (this.player.isInDialogue) {
-            console.log("Cannot start conversation: Player busy.");
+        if (!npc || !npc.exists()) {
+            console.error("Cannot start conversation: NPC does not exist.");
             return;
         }
+        if (!this.player) {
+            console.error("Cannot start conversation: Player does not exist.");
+            return;
+        }
+
         console.log(`Starting conversation with ${npc.npcName}`);
         this.player.isInDialogue = true;
 
@@ -111,13 +117,19 @@ export class ConversationManager {
 
         // Build prompt and get LLM response
         const prompt = this.buildPrompt();
-        const responseStr = await getDialogueWithGemini(prompt);
-        this.processLlmResponse(responseStr);
 
-        this.spaceListener = onKeyPress("space", () => this.handleSpacePress());
-        this.escapeListener = onKeyPress("escape", () => this.handleEscapePress());
-        this.upListener = onKeyPress("w", () => this.handleUpPress());
-        this.downListener = onKeyPress("s", () => this.handleDownPress());
+        try {
+            const responseStr = await getDialogueWithGemini(prompt);
+            this.processLlmResponse(responseStr);
+
+            this.spaceListener = onKeyPress("space", () => this.handleSpacePress());
+            this.escapeListener = onKeyPress("escape", () => this.handleEscapePress());
+            this.upListener = onKeyPress("w", () => this.handleUpPress());
+            this.downListener = onKeyPress("s", () => this.handleDownPress());
+        } catch (error) {
+            console.error("Error in startConversation:", error);
+            this.endConversation();
+        }
     }
 
     async handlePlayerResponse() {
@@ -199,16 +211,36 @@ export class ConversationManager {
     }
 
     endConversation() {
-        destroy(this.dialogueBox);
+        if (this.dialogueBox) {
+            destroy(this.dialogueBox);
+            this.dialogueBox = null;
+        }
+        if (this.content) {
+            this.content = null;
+        }
+
+        if (this.currentNpc && this.currentNpc.exists()) {
+            this.currentNpc.isInDialogue = false;
+        }
+
         this.currentNpc = null;
-        this.backtory = null;
         this.player.isInDialogue = false;
-        this.responseSelectionMode = false;
-        this.spaceListener.cancel();
-        this.escapeListener.cancel();
-        this.upListener.cancel();
-        this.downListener.cancel();
+
+        // Clean up event listeners.
+        if (this.spaceListener) this.spaceListener.cancel();
+        if (this.escapeListener) this.escapeListener.cancel();
+        if (this.upListener) this.upListener.cancel();
+        if (this.downListener) this.downListener.cancel();
+        this.spaceListener = null;
+        this.escapeListener = null;
+        this.upListener = null;
+        this.downListener = null;
+
         this.conversationHistory = [];
         this.dialogueQueue = [];
+        this.totalChunks = 0;
+        this.currentChunk = 0;
+        this.endConversationAfterCurrentDialogue = false;
+        this.responseOptions = null;
     }
 }

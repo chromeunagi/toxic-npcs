@@ -1,5 +1,6 @@
-import { makeTile } from "../utils/utils.js";
 import { ConversationManager } from "../utils/conversationManager.js";
+import { initializeMap } from "../utils/map.js";
+
 
 const npcData = {
   "bernice": {
@@ -52,7 +53,7 @@ export function setWorld(worldState) {
 
 function setupNpcWalkingTask(npc) {
   loop(rand(5, 10), () => {
-  // Don't wander if in dialogue
+    // Don't wander if in dialogue
     if (npc.isInDialogue) return;
 
     // If the NPC is not already moving, randomly decide to wander.
@@ -138,35 +139,31 @@ function initializePlayer(worldState) {
   });
 
   onKeyRelease("s", () => {
+    if (player.isInDialogue) return;
     player.stop();
-    if (player.curAnim() !== "run") {
-      setSprite(player, "bob-down-idle");
-      player.play("idle");
-    }
+    setSprite(player, "bob-down-idle");
+    player.play("idle");
   });
 
   onKeyRelease("w", () => {
+    if (player.isInDialogue) return;
     player.stop();
-    if (player.curAnim() !== "run") {
-      setSprite(player, "bob-up-idle");
-      player.play("idle");
-    }
+    setSprite(player, "bob-up-idle");
+    player.play("idle");
   });
 
   onKeyRelease("a", () => {
+    if (player.isInDialogue) return;
     player.stop();
-    if (player.curAnim() !== "run") {
-      setSprite(player, "bob-left-idle");
-      player.play("idle");
-    }
+    setSprite(player, "bob-left-idle");
+    player.play("idle");
   });
 
   onKeyRelease("d", () => {
+    if (player.isInDialogue) return;
     player.stop();
-    if (player.curAnim() !== "run") {
-      setSprite(player, "bob-right-idle");
-      player.play("idle");
-    }
+    setSprite(player, "bob-right-idle");
+    player.play("idle");
   });
 
   let tick = 0;
@@ -207,6 +204,18 @@ function initializeNpc(npcName, npcData) {
   });
 
   onUpdate(npcName, (npc) => {
+    if (npc.isInDialogue) {
+      if (npc.state === "moving" || (npc.moveDirection && (npc.moveDirection.x !== 0 || npc.moveDirection.y !== 0))) {
+        npc.stop(); // Stop current Kaboom animation
+        npc.use(sprite(npc.idleSprites[npc.facing])); // Ensure correct idle sprite
+        npc.play("idle");
+        npc.enterState("idle"); // Ensure state machine is idle
+        npc.moveDirection = null; // Clear any movement intention
+      }
+      return;
+    }
+
+
     if (npc.state === "moving" && npc.moveDirection) {
       npc.move(npc.moveDirection.scale(npc.moveSpeed));
     }
@@ -214,139 +223,10 @@ function initializeNpc(npcName, npcData) {
   return npc;
 }
 
-function initializeMap() {
-  const map = [
-    addLevel(
-      [
-        "                 ",
-        " cdddddddddddde  ",
-        " 30000000000002  ",
-        " 30000000000002  ",
-        " 30000000000002  ",
-        " 30030000008889  ",
-        " 30030000024445  ",
-        " 300a8888897777  ",
-        " 30064444457777  ",
-        " 30000000000000  ",
-        " 30000000021111  ",
-        " 3000000002      ",
-        " 1111111111      ",
-        "      b          ",
-        "     b      b    ",
-        " b             b ",
-      ],
-      {
-        tileWidth: 16,
-        tileHeight: 16,
-        tiles: {
-          0: () => makeTile("grass-m"),
-          1: () => makeTile("grass-water"),
-          2: () => makeTile("grass-r"),
-          3: () => makeTile("grass-l"),
-          4: () => makeTile("ground-m"),
-          5: () => makeTile("ground-r"),
-          6: () => makeTile("ground-l"),
-          7: () => makeTile("sand-1"),
-          8: () => makeTile("grass-mb"),
-          9: () => makeTile("grass-br"),
-          a: () => makeTile("grass-bl"),
-          b: () => makeTile("rock-water"),
-          c: () => makeTile("grass-tl"),
-          d: () => makeTile("grass-tm"),
-          e: () => makeTile("grass-tr"),
-        },
-      }
-    ),
-    addLevel(
-      [
-        "      12       ",
-        "      34       ",
-        " 000    00  12 ",
-        " 00   00    34 ",
-        " 0    0        ",
-        "      0  0     ",
-        "           5   ",
-        "           6   ",
-        "     5         ",
-        "     6   0     ",
-        "               ",
-        "               ",
-        "               ",
-      ],
-      {
-        tileWidth: 16,
-        tileHeight: 16,
-        tiles: {
-          0: () => makeTile(),
-          1: () => makeTile("bigtree-pt1"),
-          2: () => makeTile("bigtree-pt2"),
-          3: () => makeTile("bigtree-pt3"),
-          4: () => makeTile("bigtree-pt4"),
-          5: () => makeTile("tree-t"),
-          6: () => makeTile("tree-b"),
-        },
-      }
-    ),
-    addLevel(
-      [
-        " 00000000000000 ",
-        "0     11       0",
-        "0           11 0",
-        "0           11 0",
-        "0              0",
-        "0   2          0",
-        "0   2      3333 ",
-        "0   2      0   0",
-        "0   3333333    0",
-        "0    0         0",
-        "0          0000 ",
-        "0          0    ",
-        " 0000000000     ",
-        "                ",
-      ],
-      {
-        tileWidth: 16,
-        tileHeight: 16,
-        tiles: {
-          0: () => [
-            area({ shape: new Rect(vec2(0), 16, 16) }),
-            body({ isStatic: true }),
-          ],
-          1: () => [
-            area({
-              shape: new Rect(vec2(0), 8, 8),
-              offset: vec2(4, 4),
-            }),
-            body({ isStatic: true }),
-          ],
-          2: () => [
-            area({ shape: new Rect(vec2(0), 2, 16) }),
-            body({ isStatic: true }),
-          ],
-          3: () => [
-            area({
-              shape: new Rect(vec2(0), 16, 20),
-              offset: vec2(0, -4),
-            }),
-            body({ isStatic: true }),
-          ],
-        },
-      }
-    ),
-  ];
-
-  for (const layer of map) {
-    layer.use(scale(4));
-    for (const tile of layer.children) {
-      if (tile.type) {
-        tile.play(tile.type);
-      }
-    }
-  }
-}
 
 function wander(npc) {
   if (npc.state !== "idle") return;
+  if (npc.isInDialogue) return;
 
   console.log(`${npc.npcName} entering 'moving' state (logic only)`);
   npc.enterState("moving");
@@ -391,7 +271,20 @@ function wander(npc) {
 // TODO: Make player not be able to change directions while in dialogue.
 function startNpcConversation(npc, player, conversationManager) {
   // Return immediately if player is in dialogue or NPC is not idle.
-  if (player.isInDialogue || npc.state !== 'idle') return;
+  if (player.isInDialogue || npc.isInDialogue || npc.state !== 'idle') {
+    console.log("Player or NPC is already in dialogue or NPC is not idle.");
+    return;
+  }
+
+  var playerNewSprite = player.curAnim();
+  if (player.facing === 'left') playerNewSprite = 'bob-left-idle';
+  if (player.facing === 'right') playerNewSprite = 'bob-right-idle';
+  if (player.facing === 'up') playerNewSprite = 'bob-up-idle';
+  if (player.facing === 'down') playerNewSprite = 'bob-down-idle';
+  player.use(sprite(playerNewSprite));
+  player.play("idle");
+  player.use(sprite(playerNewSprite));
+  player.play("idle");
 
   // Stop NPC's current/pending movement
   if (npc.moveTimer) {
@@ -403,31 +296,33 @@ function startNpcConversation(npc, player, conversationManager) {
   npc.stop();
 
   // Set idle sprite based on last facing direction and start animation.
-  var newDir = "";
-  if (player.facing === 'left') {
-    newDir = 'right';
+  var npcNewFacing = "";
+  if (player.facing === 'left') npcNewFacing = 'right';
+  else if (player.facing === 'right') npcNewFacing = 'left';
+  else if (player.facing === 'up') npcNewFacing = 'down';
+  else if (player.facing === 'down') npcNewFacing = 'up';
+  npc.facing = npcNewFacing;
+  npc.facing = npcNewFacing;
+
+  if (npc.moveTimer) {
+    npc.moveTimer.cancel();
+    npc.moveTimer = null;
   }
-  if (player.facing === 'right') {
-    newDir = 'left';
-  }
-  if (player.facing === 'up') {
-    newDir = 'down';
-  }
-  if (player.facing === 'down') {
-    newDir = 'up';
-  }
-  npc.facing = newDir;
-  const newSprite =  npc.idleSprites[npc.facing];
-  npc.use(sprite(newSprite));
+  npc.stop();
+  npc.use(sprite(npc.idleSprites[npc.facing]));
   npc.play("idle");
 
   npc.isInDialogue = true;
+  player.isInDialogue = true;
 
   conversationManager.startConversation(npc)
-    .catch(err => console.error("Conversation error:", err))
-    .finally(() => {
+    .catch((error) => {
+      console.error("Error starting conversation:", error);
       if (npc.exists()) {
         npc.isInDialogue = false;
       }
-    });
+      if (player.exists()) {
+        player.isInDialogue = false;
+      }
+    })
 }
