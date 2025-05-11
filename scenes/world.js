@@ -1,6 +1,14 @@
 import { ConversationManager } from "../utils/conversationManager.js";
 import { initializeMap } from "../utils/map.js";
 
+const commonOfficeKnowledge = `Bernice, Kevin, and Bruce are all employees at Foogflix, a FAANG-like company. They work on scaling some dashboard for telemetry data.
+
+They are all in the same office, but they have different roles and personalities.
+
+Bruce is an intern. He's struggling to ramp up.
+Kevin is Bruce's intern host.
+Bernice is the manager of the team.
+`;
 
 const npcData = {
   "bernice": {
@@ -11,7 +19,7 @@ const npcData = {
     facing: 'down',
     isInDialogue: false,
     npcName: "Bernice",
-    backstory: "Bernice is a 41 year old woman from Atlanta, Georgia. She is a single mother of 3 children and works as a waitress at a local diner. She is very friendly and always has a smile on her face. She is also very protective of her children and will do anything to keep them safe.",
+    backstory: "Bernice is an absentee manager at a FAANG-like company. She's a slacker, super untechnical (and unaware), and is a total people-pleaser. She is a dangerous combination of machiavellian and incompetent. She is a total slacker and is very untechnical.",
     idleSprites: { 'down': 'bernice-down-idle', 'up': 'bernice-up-idle', 'left': 'bernice-left-idle', 'right': 'bernice-right-idle' },
     runSprites: { 'down': 'bernice-down-run', 'up': 'bernice-up-run', 'left': 'bernice-left-run', 'right': 'bernice-right-run' },
   },
@@ -23,16 +31,28 @@ const npcData = {
     facing: 'down',
     isInDialogue: false,
     npcName: "Kevin",
-    backstory: "Kevin is a freshly-minted senior software engineer at a FAANG-like company. This is his entire personality and it can be very grating and annoying. He is very proud of his job and loves to talk about it.",
+    backstory: "Kevin is a freshly-minted senior software engineer at a FAANG-like company. This is his entire personality and it can be very grating and annoying. He is very proud of his job and loves to talk about it. He's also secretly very insecure and has a major crush on Bernice.",
     idleSprites: { 'down': 'kevin-down-idle', 'up': 'kevin-up-idle', 'left': 'kevin-left-idle', 'right': 'kevin-right-idle' },
     runSprites: { 'down': 'kevin-down-run', 'up': 'kevin-up-run', 'left': 'kevin-left-run', 'right': 'kevin-right-run' },
+  },
+  "bruce": {
+    initialXPos: 400,
+    initialYPos: 200,
+    spriteName: "bruce-down-idle",
+    moveSpeed: 40,
+    facing: 'down',
+    isInDialogue: false,
+    npcName: "Bruce",
+    backstory: "Bruce is a 19 year old CS student from Berkeley, California. He completely, hopelessly incompetent, and despises his intern host, Kevin, who is a complete know-it-all and micromanager.",
+    idleSprites: { 'down': 'bruce-down-idle', 'up': 'bruce-up-idle', 'left': 'bruce-left-idle', 'right': 'bruce-right-idle' },
+    runSprites: { 'down': 'bruce-down-run', 'up': 'bruce-up-run', 'left': 'bruce-left-run', 'right': 'bruce-right-run' },
   }
 };
 
 export function setWorld(worldState) {
   initializeMap();
   const player = initializePlayer(worldState);
-  const conversationManager = new ConversationManager(player);
+  const conversationManager = new ConversationManager(player, commonOfficeKnowledge);
 
   // Initialize all NPCs
   for (const npcName of Object.keys(npcData)) {
@@ -57,7 +77,7 @@ function setupNpcWalkingTask(npc) {
     if (npc.isInDialogue) return;
 
     // If the NPC is not already moving, randomly decide to wander.
-    if (rand() < 0.8 && npc.state === 'idle') {
+    if (rand() < 0.2 && npc.state === 'idle') {
       wander(npc);
     }
   });
@@ -69,8 +89,8 @@ function initializePlayer(worldState) {
     pos(150, 200),
     scale(4),
     area({
-      shape: new Rect(vec2(0), 16, 28),
-      offset: vec2(0, 6),
+      shape: new Rect(vec2(0), 16, 22),
+      offset: vec2(0, 10),
     }),
     body(),
     "player",
@@ -132,7 +152,7 @@ function initializePlayer(worldState) {
         player.play("idle");
       }
       // Clear active movement keys when in dialogue.
-      player.activeMovementKeys = []; // Uncomment to clear keys on dialogue start
+      player.activeMovementKeys = [];
       return;
     }
 
@@ -168,7 +188,7 @@ function initializePlayer(worldState) {
       const spriteWasChanged = setSprite(player, runSpriteName);
 
       if (spriteWasChanged || player.curAnim() !== "run") {
-      player.play("run");
+        player.play("run");
       }
 
       //setSprite(player, runSpriteName);
@@ -195,7 +215,10 @@ function initializeNpc(npcName, npcData) {
     sprite(npcData.spriteName),
     scale(4),
     pos(npcData["initialXPos"], npcData["initialYPos"]),
-    area(),
+    area({
+      shape: new Rect(vec2(0), 16, 22),
+      offset: vec2(0, 10),
+    }),
     body(),
     state("idle", ["idle", "moving"]),
     npcName,

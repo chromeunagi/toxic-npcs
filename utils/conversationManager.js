@@ -14,9 +14,10 @@ const systemPrompt = `You are helping me build dialogue for a top-down videogame
 
 
 export class ConversationManager {
-    constructor(player) {
+    constructor(player, commonOfficeKnowledge) {
         this.player = player;
         this.currentNpc = null;
+        this.commonOfficeKnowledge = commonOfficeKnowledge;
 
         this.dialogueQueue = [];
         this.conversationHistory = [];
@@ -53,7 +54,7 @@ export class ConversationManager {
     }
 
     buildPrompt() {
-        const p = `For this exchange, you are playing the role of ${this.currentNpc.npcName}, Here is the backstory for this NPC: ${this.backstory}.`;
+        const p = `For this exchange, you are playing the role of ${this.currentNpc.npcName}, Here is the backstory for this NPC: ${this.backstory}.\nHere is some knowledge that's common to all characters in the game: ${this.commonOfficeKnowledge}.\n\nHere is the player's dialogue:\n${this.player.dialogue}`;
         var prompt = `${systemPrompt}\n\n${p}`;
         if (this.conversationHistory.length > 0) {
             var history = "";
@@ -242,5 +243,6 @@ export class ConversationManager {
         this.currentChunk = 0;
         this.endConversationAfterCurrentDialogue = false;
         this.responseOptions = null;
+        this.commonOfficeKnowledge = null;
     }
 }

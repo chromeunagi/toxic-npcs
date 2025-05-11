@@ -1,4 +1,4 @@
-const PEOPLE = ["bob", "kevin", "bernice"]
+const PEOPLE = ["bob", "kevin", "bernice", "chris", "bruce"]
 
 export function loadAssets() {
 
