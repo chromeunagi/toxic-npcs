@@ -1,7 +1,7 @@
 import { ConversationManager } from "../utils/conversationManager.js";
 import { initializeMap } from "../utils/map.js";
 
-const commonOfficeKnowledge = `Bernice, Kevin, and Bruce are all employees at Foogflix, a FAANG-like company. They work on scaling some dashboard for telemetry data.
+const commonOfficeKnowledge = `Bernice, Kevin, and Bruce are all employees at Moogflix, a FAANG-like company. They work on scaling some dashboard for telemetry data.
 
 They are all in the same office, but they have different roles and personalities.
 

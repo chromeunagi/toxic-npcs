@@ -1,7 +1,6 @@
 import { getDialogueWithGemini } from './geminiApi.js';
 
-export class Prompt {
-  constructor(systemPrompt, prompt) {
+export class Prompt { constructor(systemPrompt, prompt) {
     this.systemPrompt = systemPrompt;
     this.prompt = prompt;
   }
@@ -33,7 +32,7 @@ export class Conversation {
 
   addNpcResponse(response, endConversation = false) {
     this.endConversation = endConversation;
-    const chunks = response.match(/.{1,80}/g) || [];
+    const chunks = response.match(/.{1,200}/g) || [];
     this.dialogueQueue.push(...chunks);
   }
 

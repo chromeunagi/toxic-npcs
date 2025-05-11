@@ -1,12 +1,13 @@
 import { createDialogueBox } from "../utils/ui.js";
 import { getDialogueWithGemini } from "../utils/geminiApi.js";
 
+const CHUNK_SIZE = 200;
 
 const responseJsonFormat = `Please return your response in the following JSON format:
 {{
     "text": "<Your response here>",
     "endConversation": <true if the conversation should end, false otherwise>,,
-    "responseOptions": <JSON array of strings, each a response that the player can choose from as a response to the NPC's dialogue, maximum of 3. These should all be distinctly different. Keep it under 60 characters.>
+    "responseOptions": <JSON array of strings, each a response that the player can choose from as a response to the NPC's dialogue, maximum of 3. These should all be distinctly different. Keep it under 80 characters.>
 }}
 `;
 
@@ -35,7 +36,7 @@ export class ConversationManager {
     }
 
     chunkDialogue(dialogue) {
-        const maxLen = 80;
+        const maxLen = CHUNK_SIZE;
         const words = dialogue.split(" ");
         const chunks = [];
         let current = "";

@@ -1,8 +1,8 @@
 export function createDialogueBox() {
     const dialogueBox = add([
-        rect(1280, 200),
+        rect(1920, 200),
         outline(5),
-        pos(0, 520),
+        pos(0, 1080),
         fixed(),
         color(255, 255, 255),
     ]);
@@ -10,7 +10,7 @@ export function createDialogueBox() {
     const content = dialogueBox.add([
         text("", {
             size: 42,
-            width: 1200,
+            width: 1820,
             lineSpacing: 15,
             styles: {
                 "selected": { 
@@ -21,7 +21,7 @@ export function createDialogueBox() {
             },
         }),
         color(10, 10, 10),
-        pos(40, 30),
+        pos(50, 30),
         fixed(),
     ]);
 
